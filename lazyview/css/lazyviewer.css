@@ -1,0 +1,57 @@
+.lazyview     { display: none; 
+                overflow-x: scroll; 
+                overflow-y: hidden; 
+                background-color: #fff; 
+              }
+              
+.lazyviewport { display: none; }
+              
+.lazyviewout  { border: 1px solid #C0C0C0; 
+                padding-right: 2px;                
+                display: none; 
+                background-color: #eee 
+              }
+              
+.lazyviewbtn  { display: inline; 
+                position: relative; 
+                float: right; 
+                width: 16px; 
+                max-width: 16px; 
+                min-width: 16px;
+                height: 16px; 
+                max-height: 16px; 
+                min-height: 16px; 
+                background-color: #ccc;
+                vertical-align: middle; 
+                text-align: center;      
+              }
+              
+.lazyviewbtnup  { right: -2px; }
+                  
+.lazyviewbtndn  { position: absolute !important; 
+                  right: 11px; 
+                }
+                
+.lazyviewnum  { background-color: #aaa; 
+                color: #ddd; 
+                min-width: 40px; 
+                display: inline-block; 
+                text-align: right; 
+                font-family: "Courier New", Courier, monospace !important 
+              }
+              
+.lazyviewsep  { color: #aaa; 
+                font-family: "Courier New", Courier, monospace !important 
+              }
+              
+.lazyviewstr  { white-space: nowrap; 
+                font-family: "Courier New", Courier, monospace !important 
+              }
+
+.lazyviewprss {
+	              display: none;
+                width: 6px;                
+                background-color: limegreen;
+                float: left;    
+                z-index: 1;	
+}
