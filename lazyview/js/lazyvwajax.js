@@ -1,4 +1,8 @@
-// Аякс-загрузчик текста для виждета отображения текста
+// Ajax text loader for Lazy Text View widget
+
+// Version : 1.1
+// Release : 27.06.2016
+// Web     : http://github.com/polyakoff69/lazyview
 
 /* class */ function LazyViewerLdr() {
   
@@ -21,7 +25,7 @@
     this.url = url;
   }
   
-  this.load = function (/* int */ ix, /* int */ count, /* boolean */ initMode, /* LazyViewer */ lzv){ // загрузить строки с индекса ix, count штук
+  this.load = function (/* int */ ix, /* int */ count, /* boolean */ initMode, /* LazyViewer */ lzv){ // load strings from 'ix' index, 'count'
 	var fSuccess = null, fError = null;
     
 	if(initMode){    
@@ -35,7 +39,7 @@
           lzv.setLockUI(false);
         }catch(ex){
           lzv.setLockUI(false);
-          lzv.showError("Ошибка загрузки текста: "+ex);
+          lzv.showError("Error loading text: "+ex);
         }finally{
           lzv.setLockUI(false);
         }
@@ -52,7 +56,7 @@
 	      lzv.updateTextData(data);
 	    }catch(ex){
 	      lzv.setLockUI(false);
-	      lzv.showError("Ошибка загрузки текста: "+ex);
+	      lzv.showError("Error loading text: "+ex);
 	    }finally{
 	      lzv.setLockUI(false);
 	    }
@@ -68,7 +72,7 @@
 	  success : fSuccess,
 	  error : function(response, st, err){
         lzv.setLockUI(false);		      
-        lzv.showError("Ошибка загрузки текста");
+        lzv.showError("Error loading text");
 	  },
 	  complete : function(xhr, st){
         lzv.setLockUI(false);

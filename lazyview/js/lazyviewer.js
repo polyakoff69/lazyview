@@ -1,35 +1,46 @@
-// Виждет отображения текста с подкачкой Аяксом
+// Lazy Text View widget
 
-/* class */ function LazyViewer(/* String */id, /* String */ imgPath) {
-  this.id = id;         // ИД виджета
+// Version : 1.1
+// Release : 27.06.2016
+// Web     : http://github.com/polyakoff69/lazyview
+
+/* class */ function LazyViewer(/* String */id, /* String */ imgPath, /* boolean */ sysButtons) {
+  this.id = id;         // widget ID
   this.margin = 0;
-  this.rh = 16*6;       // высота строки TODO: calc
+  this.rh = 16*6;       // string height
   
-  this.frameSz = 100*3; // размер фрейма (Х условных экранов)
-  this.strBegin = 0;    // начальный индекс текущего диапазона
-  this.strEnd   = 0;    // конечный индекс текущего диапазона
-  this.textLen  = null; // общее кол-во строк текста (исчисляется с 0)
+  this.frameSz = 100*3; // frame size 
+  this.strBegin = 0;    // current frame begin index
+  this.strEnd   = 0;    // current frame end index
+  this.textLen  = null; // total strings (0-based)
   
-  this.timerId = null;  // ИД таймера
-  this.lockUI = false;  // блокировка UI на время загрузки данных
+  this.timerId = null;  // timer ID
+  this.mouseIntval = 250;
+  this.lockUI = false;  // lock UI while data is loaded
   
   if(imgPath!=undefined && imgPath!=null){
     this.imcp = imgPath;
   }else{
 	this.imcp = "";  
   }
-  
-  this.LDR = null;      // Аякс - загрузчик
 
-  this.getId = function(){ // ИД виджета
+  if(sysButtons!=undefined && sysButtons!=null){
+    this.sysButt = sysButtons;
+  }else{
+	this.sysButt = false;  
+  }
+  
+  this.LDR = null;      // Ajax-loader
+
+  this.getId = function(){ // widget ID
     return id;
   }
-
-  this.getVpId = function(){ // ИД viewporta
+  
+  this.getVpId = function(){ // viewport ID
     return id + "viewport";
   }
 
-  this.getContId = function(){ // ИД контейнера
+  this.getContId = function(){ // container ID
     return id + "outer";
   }
   
@@ -37,19 +48,23 @@
     return this.LDR;
   }
   
-  this.getBtnUpId = function(){ // ИД кнопки ВВЕРХ
+  this.getMouseIntval = function(){
+	return this.mouseIntval;
+  }
+  
+  this.getBtnUpId = function(){ // UP button ID
     return id + "btnup";
   } 
 
-  this.getBtnDnId = function(){ // ИД кнопки ВНИЗ
+  this.getBtnDnId = function(){ // DOWN button ID
 	return id + "btndn";
   } 
 
-  this.getProgrId = function(){ // ИД прогресса
+  this.getProgrId = function(){ // progress ID
 	return id + "prgss";
   }
   
-  this.getRowHeight = function(){ // высота строки в пикс.
+  this.getRowHeight = function(){ // string height
 	return this.rh;
   } 
 
@@ -105,7 +120,7 @@
 	this.lockUI = b;
   }  
   
-  this.checkFocused = function(){ // проверка, что фокус у компонента
+  this.checkFocused = function(){ // check if element is focused
     var foc = document.activeElement; // $(':focus');
     if(foc==undefined || foc==null)
       return false;
@@ -126,7 +141,7 @@
     return false;
   }
   
-  this.resize = function(/* LazyViewer */that){ // обработка размера	  
+  this.resize = function(/* LazyViewer */that){ // resize
     var d = $( '#'+id );
     var o = $( '#'+id + "outer" );
     
@@ -139,18 +154,25 @@
     
     d.height(h);
     
-    var vp = $("#"+ id + "viewport");
-    
+    // var vp = $("#"+ id + "viewport");    
     // var vps = 0; // $(vp).scrollTop(); // $(vp).height(h-vps)  // $(vp).scrollTop(vps);    
     
+    var sysButt = false;
+    if(that!=undefined && that!=null)
+      sysButt = that.sysButt;    	
+    
     var btn = $("#"+ id + "btndn");
-    btn.css("top", ""+(offset.top + h - 16*2)+"px");
+    if(sysButt==true){      
+      btn.css("top", ""+(offset.top + h - 16*2)+"px");
+    }else{
+      btn.css("top", ""+(h - 116)+"px");
+    }
 
     if(that!=undefined && that!=null)
       that.updateProgress();
   }
 
-  this.onResize = function(/* LazyViewer */that){ // обработка размера	  
+  this.onResize = function(/* LazyViewer */that){ // resize
     var d = $( '#'+id );
     var o = $( '#'+id + "outer" );
     
@@ -159,15 +181,23 @@
     
     var h = d.height();
     
+    var sysButt = false;
+    if(that!=undefined && that!=null)
+      sysButt = that.sysButt;    	
+    
     var btn = $("#"+ id + "btndn");
-    btn.css("top", ""+(offset.top + h - 16*2)+"px");
-    btn.css("left", ""+(offset.left+ o.width() - margin/2 - 3)+"px");
+    if(sysButt==true){      
+      btn.css("top", ""+(offset.top + h - 16*2)+"px");
+      btn.css("left", ""+(offset.left+ o.width() - margin/2 - 3)+"px");
+    }else{
+      btn.css("top", ""+(h - 116)+"px");	
+    }
 
     if(that!=undefined && that!=null)
       that.updateProgress();
   }
   
-  this.scrUp = function(/* LazyViewer */ that){ // обработка UP
+  this.scrUp = function(/* LazyViewer */ that){ // handle UP
 	if(this.getLockUI()==true)
 	  return;
 	this.setLockUI(true);
@@ -188,7 +218,7 @@
       this.setLockUI(false);
   }
 
-  this.scrDn = function(/* LazyViewer */ that){ // обработка DOWN
+  this.scrDn = function(/* LazyViewer */ that){ // handle DOWN
 	if(this.getLockUI()==true)
 	  return;
 	this.setLockUI(true);
@@ -209,7 +239,7 @@
       this.setLockUI(false);
   }
 
-  this.pgUp = function(/* LazyViewer */ that){ // обработка PG UP
+  this.pgUp = function(/* LazyViewer */ that){ // handle PG UP
 	if(this.getLockUI()==true)
 	  return;
 	this.setLockUI(true);
@@ -233,7 +263,7 @@
       this.setLockUI(false);
   }
 
-  this.pgDn = function(/* LazyViewer */ that){ // обработка PG DN
+  this.pgDn = function(/* LazyViewer */ that){ // handle PG DN
 	if(this.getLockUI()==true)
 	  return;
 	this.setLockUI(true);
@@ -254,7 +284,7 @@
       this.setLockUI(false);
   }
   
-  this.pgHome = function(/* LazyViewer */ that){ // обработка HOME
+  this.pgHome = function(/* LazyViewer */ that){ // handle HOME
 	if(this.getLockUI()==true)
 	  return;
 	this.setLockUI(true);
@@ -274,7 +304,7 @@
 	  this.setLockUI(false);
   }
   
-  this.pgEnd = function(/* LazyViewer */ that){ // обработка END
+  this.pgEnd = function(/* LazyViewer */ that){ // handle END
 	var last = this.getTextLen(), needLoad = true;
 
 	if(this.getLockUI()==true)
@@ -302,16 +332,16 @@
 	  this.setLockUI(false);
   }
   
-  this.mouseUpPress = function(/* LazyViewer */ that){ // обработка нажатия мышью на внопку ВВЕРХ
+  this.mouseUpPress = function(/* LazyViewer */ that){ // handle mouse press on UP
 	var tm = that.getTimerId();
     if(tm!=undefined && tm!=null){
    	  clearInterval(tm);
     }
-   	tm = setInterval(function(){ that.scrUp(that) } , 500);
+   	tm = setInterval(function(){ that.scrUp(that) } , that.getMouseIntval());
    	that.setTimerId(tm);
   }
   
-  this.mouseUpUp = function(/* LazyViewer */ that){ // обработка отпускания мышы на кнопке ВВЕРХ 
+  this.mouseUpUp = function(/* LazyViewer */ that){ // handle mouse release on UP
 	var tm = that.getTimerId();
     if(tm!=undefined && tm!=null){
    	  clearInterval(tm);
@@ -319,20 +349,20 @@
    	that.setTimerId(null);	  
   }
 
-  this.mouseDnPress = function(/* LazyViewer */ that){// обработка нажатия мышы на кнопке ВНИЗ
+  this.mouseDnPress = function(/* LazyViewer */ that){// handle mouse press on DOWN
 	var tm = that.getTimerId();
     if(tm!=undefined && tm!=null){
    	  clearInterval(tm);
     }
-   	tm = setInterval(function(){ that.scrDn(that) }, 500);
+   	tm = setInterval(function(){ that.scrDn(that) }, that.getMouseIntval());
    	that.setTimerId(tm);	  
   }
   
-  this.mouseDnUp = function(/* LazyViewer */ that){// обработка отпускания мышы на кнопке ВНИЗ
+  this.mouseDnUp = function(/* LazyViewer */ that){// handle mouse release on DOWN
     that.mouseUpUp(that);
   }
   
-  this.isNeedLoad = function(/* LazyViewer */ that, /* boolean */ dirUp){ // проверка нужно ли подкачать текст
+  this.isNeedLoad = function(/* LazyViewer */ that, /* boolean */ dirUp){ // check if more text is needed to load
 	if(dirUp && that.getStrBegin()<=0) // ^
       return false;
 	
@@ -360,7 +390,7 @@
 	return false;
   }
   
-  this.loadTextFrame = function(/* boolean */ dirUp){ // загрузить фрейм текста	
+  this.loadTextFrame = function(/* boolean */ dirUp){ // load frame
 	this.setLockUI(true);
 	  
 	var ix = this.getStrEnd();
@@ -387,7 +417,7 @@
 	      var dy = event.deltaY;
 	      var df = event.deltaFactor;
 		
-		  if(dy<0){ // вниз - отрицательно
+		  if(dy<0){ // negative = down
 		    if(dy>-2)
 			  that.scrDn(that);
 		    else
@@ -404,18 +434,32 @@
 	
   }
 
-  this.createButtons = function(panel){ // создать кнопки прокрутки мышой	  
+  this.createButtons = function(panel){ // create buttons for mouse clicks	  
     var btn = document.createElement("div");
     btn = $(btn); 
     btn.attr("id", this.getBtnUpId());
-    btn.addClass("lazyviewbtn");
-    btn.addClass("lazyviewbtnup");
-    btn.html("<img src=\""+this.imcp+"u.gif\" border=\"0\" >");        
+    
+    var gif = "";
+    if(this.sysButt==true){
+      btn.addClass("lazyviewbtn");
+      btn.addClass("lazyviewbtnup");
+      gif = "u.gif";      
+    }else{
+      btn.addClass("lazyviewbtn2");
+      btn.addClass("lazyviewbtnup2");
+      gif = "ru.gif";          	
+    }
+    btn.html("<img src=\""+this.imcp+gif+"\" border=\"0\" title=\"Up. Press Ctrl for scroll to begin.\" >");
 
     $(btn).bind("click", {lzv : this},  function (e) {
       var that = $(e.data.lzv);
       that = $(that)[0];
-      that.scrUp(that);
+      
+      if(e.ctrlKey){
+    	that.pgHome(that);  
+      }else{
+        that.scrUp(that);
+      }
     });
 
     $(btn).bind("mousedown", {lzv : this},  function (e) {
@@ -441,15 +485,28 @@
     
     btn = document.createElement("div");
     btn = $(btn);
-    btn.attr("id", this.getBtnDnId());        
-    btn.addClass("lazyviewbtn");
-    btn.addClass("lazyviewbtndn");
-    btn.html("<img src=\""+this.imcp+"v.gif\" border=\"0\" >");
+    btn.attr("id", this.getBtnDnId());
+    
+    if(this.sysButt==true){
+      btn.addClass("lazyviewbtn");
+      btn.addClass("lazyviewbtndn");
+      gif = "v.gif";      
+    }else{
+      btn.addClass("lazyviewbtn2");
+      btn.addClass("lazyviewbtndn2");
+      gif = "rv.gif";          	
+    }
+    btn.html("<img src=\""+this.imcp+gif+"\" border=\"0\" title=\"Down. Press Ctrl to scroll to end.\" >");
 
     $(btn).bind("click", {lzv : this},  function (e) {
       var that = $(e.data.lzv);
       that = $(that)[0];
-      that.scrDn(that);
+
+      if(e.ctrlKey){
+      	that.pgEnd(that);  
+      }else{      
+        that.scrDn(that);
+      }
   	});    
     
     $(btn).bind("mousedown", {lzv : this},  function (e) {
@@ -473,7 +530,7 @@
     btn.prependTo(panel);    
   }
 
-  this.createProgress = function(panel){ // создать индикатор прогресса
+  this.createProgress = function(panel){ // create progress indicator
     var prg = document.createElement("div");
     prg = $(prg);    
     prg.attr("id", this.getProgrId());        
@@ -482,7 +539,7 @@
     prg.prependTo(panel);
   }
   
-  this.createUiHandlers = function(){ // создание обработчиков клавиатуры
+  this.createUiHandlers = function(){ // create keyboard handlers
     var vp = $(document);    
     
     $(vp).bind("keydown", {lzv : this},  function (e) { 
@@ -514,21 +571,21 @@
     ldr.load(ix, count);
   } */
 
-  this.loadTextInit = function (){ // загрузить первоначальный текст
+  this.loadTextInit = function (){ // load initial text
     var ldr = this.getLoader();
     ldr.load(0, this.getFrameSz(), true, this);
   }
 
-  this.loadTextEnd = function (){ // загрузить конец текста
+  this.loadTextEnd = function (){ // load final frame
     var ldr = this.getLoader();
     ldr.load(-1, this.getFrameSz(), true, this);
   }
   
-  this.init = function(/* int */ margin, /* String*/ url, /* String*/ dataId, /* boolean */ bAutoSize){ // инициализация виджета
+  this.init = function(/* int */ margin, /* String*/ url, /* String*/ dataId, /* boolean */ bAutoSize){ // widget init.
     this.margin = margin;
 	if(this.margin==undefined || this.margin==null)this.margin = 0;
 	  
-    var d = $( '#'+id );
+    var d = $( '#'+this.getId() );
     d.addClass("lazyview");
     d.css('height', '200px');    
         
@@ -591,7 +648,7 @@
     vp.focus();
   }
   
-  this.setTextData = function(/* JSON */ data){ // заместить полностью текст виджета
+  this.setTextData = function(/* JSON */ data){ // replace whole text in widget
     if(data==undefined || data==null)
       return;
     
@@ -634,7 +691,7 @@
     this.updateProgress();
   }
   
-  this.updateTextData = function(/* JSON */ data){ // добавить фрейм текста и удалить лишний фрейм
+  this.updateTextData = function(/* JSON */ data){ // add new frame and delete unused frame
     if(data==undefined || data==null)
       return;
     
@@ -684,7 +741,7 @@
     this.setStrBegin(begin);
     this.setStrEnd(end);
     
-    this.removeStr(data.dir, cnt, vp); // удалить лишние строки
+    this.removeStr(data.dir, cnt, vp); // delete excess strings
     
     this.updateProgress();
   }
@@ -706,7 +763,7 @@
     }
   }
   
-  this.removeStr = function(/* String */dir, /* int */ cnt, /* DOM */ vp){ // удалить лишние строки
+  this.removeStr = function(/* String */dir, /* int */ cnt, /* DOM */ vp){ // delete excess strings
 	var v = new Array(); 
 		
     $('.lazyviewstr').each(function (index, value) { 
@@ -747,7 +804,7 @@
     $.toaster(txt, 'Ошибка', 'danger');
   }
   
-  this.updateProgress = function(){ // расчет индикатора прогресса
+  this.updateProgress = function(){ // calc indicator
 	try{  
       var prg = $("#"+ id + "prgss");
     

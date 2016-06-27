@@ -50,8 +50,49 @@
 
 .lazyviewprss {
 	              display: none;
-                width: 6px;                
+                width: 4px;     
+                min-width: 4px;           
                 background-color: limegreen;
                 float: left;    
-                z-index: 1;	
+                z-index: 1;
+                padding: 1px;	
 }
+
+              
+.lazyviewbtn2 { display: inline; 
+                position: relative; 
+                float: right;               
+                vertical-align: middle; 
+                text-align: center;  
+                cursor: pointer;    
+              }
+              
+.lazyviewbtnup2 {  }
+
+.lazyviewbtnup2 img 
+                { position: absolute;
+                  top: 10px;
+                  right: 10px;
+                  opacity : 0.5;
+                  filter: alpha(opacity=50);                    
+                }
+                
+.lazyviewbtnup2 img:hover 
+                { opacity : 1.0;
+                  filter: none;                    
+                }                
+                  
+.lazyviewbtndn2 {   }
+
+.lazyviewbtndn2 img 
+                { position: absolute;
+                  top: 50px;
+                  right: 10px; 
+                  opacity : 0.5;
+                  filter: alpha(opacity=50);                    
+                }
+                                
+.lazyviewbtndn2 img:hover 
+                { opacity : 1.0;
+                  filter: none;                    
+                }                                
