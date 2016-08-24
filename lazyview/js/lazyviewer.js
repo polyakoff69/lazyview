@@ -1,7 +1,7 @@
 // Lazy Text View widget
 
-// Version : 1.1
-// Release : 27.06.2016
+// Version : 1.2
+// Release : 24.08.2016
 // Web     : http://github.com/polyakoff69/lazyview
 
 /* class */ function LazyViewer(/* String */id, /* String */ imgPath, /* boolean */ sysButtons) {
@@ -18,6 +18,11 @@
   this.mouseIntval = 250;
   this.lockUI = false;  // lock UI while data is loaded
   
+  this.TXT_UP = "Up. Press Ctrl to scroll to top.";
+  this.TXT_DN = "Down. Press Ctrl to scroll to end.";
+  this.TXT_ERR = 'Error';
+  this.TXT_ERR_LOAD = 'Error loading text'; 
+    
   if(imgPath!=undefined && imgPath!=null){
     this.imcp = imgPath;
   }else{
@@ -119,7 +124,16 @@
   this.setLockUI = function(/* boolean */ b){
 	this.lockUI = b;
   }  
-  
+
+  this.setLocale = function(id){
+	  if("RU"==id || "ru"==id){
+      this.TXT_UP = "Вверх. Удерживайте Ctrl для перехода к началу.";
+      this.TXT_DN = "Вниз. Удерживайте Ctrl для перехода к концу.";
+      this.TXT_ERR = 'Ошибка';
+      this.TXT_ERR_LOAD = 'Ошибка загрузки текста';
+	  }
+  }
+    
   this.checkFocused = function(){ // check if element is focused
     var foc = document.activeElement; // $(':focus');
     if(foc==undefined || foc==null)
@@ -449,7 +463,7 @@
       btn.addClass("lazyviewbtnup2");
       gif = "ru.gif";          	
     }
-    btn.html("<img src=\""+this.imcp+gif+"\" border=\"0\" title=\"Up. Press Ctrl for scroll to begin.\" >");
+    btn.html("<img src=\""+this.imcp+gif+"\" border=\"0\" title=\""+this.TXT_UP+"\" >");
 
     $(btn).bind("click", {lzv : this},  function (e) {
       var that = $(e.data.lzv);
@@ -496,7 +510,7 @@
       btn.addClass("lazyviewbtndn2");
       gif = "rv.gif";          	
     }
-    btn.html("<img src=\""+this.imcp+gif+"\" border=\"0\" title=\"Down. Press Ctrl to scroll to end.\" >");
+    btn.html("<img src=\""+this.imcp+gif+"\" border=\"0\" title=\""+this.TXT_DN+"\" >");
 
     $(btn).bind("click", {lzv : this},  function (e) {
       var that = $(e.data.lzv);
@@ -641,10 +655,26 @@
     if(url!=undefined && url!=null)
       this.LDR.setUrl(url);
     this.LDR.setId(dataId);
+    this.LDR.setErrMsg(this.TXT_ERR_LOAD);
     
     this.setLockUI(true);
     this.loadTextInit();
     
+    var IE = (!+"\v1")?true:false;
+    var IEVer = this.getIeVer();  // alert("IE " + IE+" v. "+IEVer);
+    if (IE && $.browser.msie && IEVer<10) { 
+      // alert("IE " + IEVer);
+      d = $(d);
+      var that = this;
+      d.scroll(function() {
+        that.updScroll8(d);
+      });
+
+      vp.scroll(function() {    
+        that.updScroll8(vp);
+      });
+    }
+
     vp.focus();
   }
   
@@ -801,7 +831,7 @@
   }
   
   this.showError = function(txt){
-    $.toaster(txt, 'Ошибка', 'danger');
+    $.toaster(txt, this.TXT_ERR, 'danger');
   }
   
   this.updateProgress = function(){ // calc indicator
@@ -841,5 +871,28 @@
       prg.css("display", "none");
     }
   }
+
+  this.updScroll8 = function (el){
+    try{
+      //el.html(el.html());
+      //el.trigger("resize");    	
+   	  var n = document.createTextNode(' ');
+      el.append(n);
+      (function(){n.parentNode.removeChild(n)}).defer();    	
+    }catch(ex){;}	  
+  }
+  
+  this.getIeVer = function (){
+    var ua = navigator.userAgent;
+	  if (ua.indexOf("Trident/6.0") > -1) {
+	    return 10;
+    } else if (ua.indexOf("Trident/5.0") > -1) {      
+	    return 9;
+    } else if (ua.indexOf("Trident/4.0") > -1) {
+   	  return 8;
+    }
+
+    return $.browser.version;
+  }  
   
 }

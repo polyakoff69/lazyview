@@ -1,13 +1,15 @@
 // Ajax text loader for Lazy Text View widget
 
-// Version : 1.1
-// Release : 27.06.2016
+// Version : 1.2
+// Release : 24.08.2016
 // Web     : http://github.com/polyakoff69/lazyview
 
 /* class */ function LazyViewerLdr() {
   
   this.url = null;  // URL
   this.id  = "";    // ИД 
+
+  this.TXT_ERR_LOAD = 'Error loading text';
 
   this.getId = function(){ // ИД 
     return this.id;
@@ -25,9 +27,15 @@
     this.url = url;
   }
   
+  this.setErrMsg = function(e){
+    this.TXT_ERR_LOAD = e;
+  }
+  
   this.load = function (/* int */ ix, /* int */ count, /* boolean */ initMode, /* LazyViewer */ lzv){ // load strings from 'ix' index, 'count'
 	var fSuccess = null, fError = null;
-    
+  var errmsg = this.TXT_ERR_LOAD;
+	errmsg = ""+errmsg;
+	    
 	if(initMode){    
       var d = "F";
       if(ix<0)
@@ -39,7 +47,7 @@
           lzv.setLockUI(false);
         }catch(ex){
           lzv.setLockUI(false);
-          lzv.showError("Error loading text: "+ex);
+          lzv.showError(errmsg+": "+ex);
         }finally{
           lzv.setLockUI(false);
         }
@@ -56,7 +64,7 @@
 	      lzv.updateTextData(data);
 	    }catch(ex){
 	      lzv.setLockUI(false);
-	      lzv.showError("Error loading text: "+ex);
+	      lzv.showError(errmsg+": "+ex);
 	    }finally{
 	      lzv.setLockUI(false);
 	    }
@@ -72,7 +80,7 @@
 	  success : fSuccess,
 	  error : function(response, st, err){
         lzv.setLockUI(false);		      
-        lzv.showError("Error loading text");
+        lzv.showError(errmsg);
 	  },
 	  complete : function(xhr, st){
         lzv.setLockUI(false);
