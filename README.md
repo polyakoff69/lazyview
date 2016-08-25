@@ -10,5 +10,8 @@ Lazy Text View widget is written using JavaScript and jQuery. So, it is required
 
 The widget provides user interface for text display and requires server-side data source. You have to implement server-side component yourself, it's logic is quite simple. When the widget needs next chunk of text, it queries server (using POST-method) for the next chunk. The request specifies data source ID, starting number of string and quantity of requested strings. Also request specifies a direction: forward or reverse. So, you have to write program (servlet, controller etc...), which would be able to output some number of text strings starting from specified string in forward or reverse direction. You may use any programming language: Java, PHP, Pyton.... it doesn't matter. Your controller just must accept POST-request and output JSON-data. The widget accepts data in JSON format. 
 
+#Support
+Write to i.polyakoff@inbox.ru, if you have any questions or need support.
+
 ###More details in README.PDF
 ###Quick start guide: http://polyakoff.ucoz.net/
